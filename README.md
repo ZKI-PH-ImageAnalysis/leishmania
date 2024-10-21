@@ -1,7 +1,7 @@
 # Decision-support system for live detection of Leishmania parasites from microscopic images with Deep Learning
 
 Key Features:
-- Real-time analysis of leishmania parasites
+- Real-time prediction of leishmania parasites
 - Intuitive user interface for easy use
 
 ## Installing / Getting started
