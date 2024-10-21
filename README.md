@@ -28,14 +28,11 @@ python
 import torch
 ```
 ```shell
- conda install conda-forge::ultralytics
-```
-```shell
 torch.cuda.is_available()
 ```
 Output should be True
 ```shell
-pip install cython==3.0.10 matplotlib opencv-python pillow==6.2.2 numpy==1.23.1 pycocotools
+pip install cython==3.0.10 matplotlib opencv-python pillow==6.2.2 numpy==1.23.1 pycocotools ultralytics
 ```
 ```shell
 cd path_to_MicroPredictor_folder
