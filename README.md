@@ -55,6 +55,7 @@ python livestream.py
 - NumPy 1.23.1
 - Cython 3.0.10
 - Pillow 6.2.2
+- Ultralytics 8.2.76
 
 <!---
 ### Setting up Dev
