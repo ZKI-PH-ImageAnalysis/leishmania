@@ -12,10 +12,10 @@ A quick introduction of the minimal setup you need to get the livestream running
 Download and install miniconda
 https://docs.anaconda.com/miniconda/
 ```shell
-conda create--name yolact python=3.8
+conda create--name leishmania python=3.8
 ```
 ```shell
-conda activate yolact
+conda activate leishmania
 ```
 ```shell
 conda install pytorch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 pytorch-cuda=12.1 -c pytorch -c nvidia
