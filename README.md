@@ -28,6 +28,9 @@ python
 import torch
 ```
 ```shell
+ conda install conda-forge::ultralytics
+```
+```shell
 torch.cuda.is_available()
 ```
 Output should be True
