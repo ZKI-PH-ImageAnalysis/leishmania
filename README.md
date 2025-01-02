@@ -11,7 +11,7 @@ A quick introduction of the minimal setup you need to get the livestream running
 Download and install miniconda
 https://docs.anaconda.com/miniconda/
 ```shell
-conda create--name leishmania python=3.8
+conda create --name leishmania python=3.8
 ```
 ```shell
 conda activate leishmania
@@ -31,11 +31,15 @@ torch.cuda.is_available()
 ```
 Output should be True
 ```shell
-pip install cython==3.0.10 matplotlib opencv-python pillow==6.2.2 numpy==1.23.1 pycocotools ultralytics ruamel.yaml
+exit()
+```
+```shell
+pip install cython==3.0.10 matplotlib opencv-python pillow==6.2.2 numpy==1.23.1 PyQt5==5.15.10 pycocotools ultralytics==8.2.76 ruamel.yaml
 ```
 ```shell
 cd path_to_MicroPredictor_folder
 ```
+Under Windows, you can have the configuration file created automatically.
 ```shell
 python create_config.py
 ```
@@ -54,6 +58,7 @@ python livestream.py
 - NumPy 1.23.1
 - Cython 3.0.10
 - Pillow 6.2.2
+- PyQt5 5.15.10
 - Ultralytics 8.2.76
 - ruamel.yaml 0.18.6
 
@@ -103,7 +108,50 @@ We can maybe use [SemVer](http://semver.org/) for versioning. For the versions a
 
 ## Configuration
 
-Here you should write what are all of the configurations a user can enter when using the project.
+Below you can see what a configuration file should look like. If create_config.py does not work for you, you can create the file manually and fill it out with the help of cameratest.ipynb.
+```shell
+version: 1.0
+
+# Camera Settings
+camera_nr: 0
+camera_resolutions:
+- [648, 486]
+- [1296, 972]
+- [2592, 1944]
+used_camera_resolution: 2
+camera_brightness_min: -64
+camera_brightness_max: 64
+camera_brightness_standard: 0
+camera_brightness_used: 0
+camera_contrast_min: -100
+camera_contrast_max: 100
+camera_contrast_standard: 0
+camera_contrast_used: 0
+camera_saturation_min: 0
+camera_saturation_max: 255
+camera_saturation_standard: 128
+camera_saturation_used: 128
+camera_hue_min: -180
+camera_hue_max: 180
+camera_hue_standard: 0
+camera_hue_used: 0
+
+# Snap Image Settings
+change_scaling: false
+crop_or_resize: crop
+scaling_width: 648
+scaling_height: 486
+save_path: 'd:\Leischmanien\MicroPredictor-main\MicroPredictor\snapped_images'
+
+# Yolact Parameters
+yolact_config: yolact_resnet101_blood_config
+yolact_weights: 
+  path\to\folder\weights\yolact_resnet101_blood_6399_96000.pth
+
+# Yolo Parameters
+yolo_weights: 
+  path\to\folder\weights\leishmania_finetuning.pt
+```
 
 <!---
 ## Tests
