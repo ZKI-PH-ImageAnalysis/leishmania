@@ -36,6 +36,7 @@ pip install cython==3.0.10 matplotlib opencv-python pillow==6.2.2 numpy==1.23.1 
 ```shell
 cd path_to_MicroPredictor_folder
 ```
+Under Windows, you can have the configuration file created automatically.
 ```shell
 python create_config.py
 ```
@@ -103,6 +104,7 @@ We can maybe use [SemVer](http://semver.org/) for versioning. For the versions a
 
 ## Configuration
 
+Below you can see what a configuration file should look like. If create_config.py does not work for you, you can create the file manually and fill it out with the help of cameratest.ipynb.
 ```shell
 version: 1.0
 
