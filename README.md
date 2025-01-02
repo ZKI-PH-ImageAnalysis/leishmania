@@ -37,6 +37,9 @@ pip install cython==3.0.10 matplotlib opencv-python pillow==6.2.2 numpy==1.23.1 
 cd path_to_MicroPredictor_folder
 ```
 ```shell
+python create_config.py
+```
+```shell
 python livestream.py
 ```
 
