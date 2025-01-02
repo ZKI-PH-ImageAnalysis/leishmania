@@ -11,7 +11,7 @@ A quick introduction of the minimal setup you need to get the livestream running
 Download and install miniconda
 https://docs.anaconda.com/miniconda/
 ```shell
-conda create--name leishmania python=3.8
+conda create --name leishmania python=3.8
 ```
 ```shell
 conda activate leishmania
