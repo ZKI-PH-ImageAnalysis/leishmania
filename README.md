@@ -31,7 +31,7 @@ torch.cuda.is_available()
 ```
 Output should be True
 ```shell
-pip install cython==3.0.10 matplotlib opencv-python pillow==6.2.2 numpy==1.23.1 pycocotools ultralytics
+pip install cython==3.0.10 matplotlib opencv-python pillow==6.2.2 numpy==1.23.1 pycocotools ultralytics ruamel.yaml
 ```
 ```shell
 cd path_to_MicroPredictor_folder
@@ -55,6 +55,7 @@ python livestream.py
 - Cython 3.0.10
 - Pillow 6.2.2
 - Ultralytics 8.2.76
+- ruamel.yaml 0.18.6
 
 <!---
 ### Setting up Dev
@@ -98,12 +99,13 @@ And again you'd need to tell what the previous code actually does.
 ## Versioning
 
 We can maybe use [SemVer](http://semver.org/) for versioning. For the versions available, see the [link to tags on this repository](/tags).
-
+-->
 
 ## Configuration
 
 Here you should write what are all of the configurations a user can enter when using the project.
 
+<!---
 ## Tests
 
 Describe and show how to run the tests with code examples.
