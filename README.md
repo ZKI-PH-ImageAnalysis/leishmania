@@ -103,7 +103,49 @@ We can maybe use [SemVer](http://semver.org/) for versioning. For the versions a
 
 ## Configuration
 
-Here you should write what are all of the configurations a user can enter when using the project.
+```shell
+version: 1.0
+
+# Camera Settings
+camera_nr: 0
+camera_resolutions:
+- [648, 486]
+- [1296, 972]
+- [2592, 1944]
+used_camera_resolution: 2
+camera_brightness_min: -64
+camera_brightness_max: 64
+camera_brightness_standard: 0
+camera_brightness_used: 0
+camera_contrast_min: -100
+camera_contrast_max: 100
+camera_contrast_standard: 0
+camera_contrast_used: 0
+camera_saturation_min: 0
+camera_saturation_max: 255
+camera_saturation_standard: 128
+camera_saturation_used: 128
+camera_hue_min: -180
+camera_hue_max: 180
+camera_hue_standard: 0
+camera_hue_used: 0
+
+# Snap Image Settings
+change_scaling: false
+crop_or_resize: crop
+scaling_width: 648
+scaling_height: 486
+save_path: 'd:\Leischmanien\MicroPredictor-main\MicroPredictor\snapped_images'
+
+# Yolact Parameters
+yolact_config: yolact_resnet101_blood_config
+yolact_weights: 
+  path\to\folder\weights\yolact_resnet101_blood_6399_96000.pth
+
+# Yolo Parameters
+yolo_weights: 
+  path\to\folder\weights\leishmania_finetuning.pt
+```
 
 <!---
 ## Tests
