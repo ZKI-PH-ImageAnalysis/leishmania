@@ -34,7 +34,7 @@ Output should be True
 exit()
 ```
 ```shell
-pip install cython==3.0.10 matplotlib opencv-python pillow==6.2.2 numpy==1.23.1 pycocotools ultralytics ruamel.yaml
+pip install cython==3.0.10 matplotlib opencv-python pillow==6.2.2 numpy==1.23.1 PyQt5=5.15.10 pycocotools ultralytics ruamel.yaml
 ```
 ```shell
 cd path_to_MicroPredictor_folder
@@ -58,6 +58,7 @@ python livestream.py
 - NumPy 1.23.1
 - Cython 3.0.10
 - Pillow 6.2.2
+- PyQt5 5.15.10
 - Ultralytics 8.2.76
 - ruamel.yaml 0.18.6
 
