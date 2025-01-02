@@ -31,6 +31,7 @@ def create_config_yaml(file_path, config_variables):
     config_template = f"""version: {config_variables['version']}
 
 # Camera Settings
+camera_nr: {config_variables['camera_nr']}
 camera_resolutions:
 {camera_resolutions}
 used_camera_resolution: {config_variables['used_camera_resolution']}
@@ -264,6 +265,7 @@ if __name__ == "__main__":
     # Prepare configuration variables
     config_variables = {
         "version": 1.0,
+        "camera_nr": used_port,
         "camera_resolutions": resolutions,
         "used_camera_resolution": 0,
         "camera_brightness_min": int(

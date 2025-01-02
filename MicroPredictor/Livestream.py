@@ -401,7 +401,7 @@ class CameraThread(QThread):
     def __init__(self, value_threshold: int) -> None:
         super().__init__()
         # setup for the stream
-        self.cap = cv2.VideoCapture(0)  # Open default camera
+        self.cap = cv2.VideoCapture(config["camera_nr"])  # Open default camera
         self.cap.set(
             cv2.CAP_PROP_FRAME_WIDTH,
             config["camera_resolutions"][config["used_camera_resolution"]][0],
