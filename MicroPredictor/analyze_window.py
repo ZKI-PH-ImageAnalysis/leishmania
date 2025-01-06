@@ -253,18 +253,17 @@ class analyze_window(QWidget):
         """
         try:
             # Determine the file filter based on the input type (image or video)
-            filter = ""
+            filter_type = ""
             if self.image_radiobutton.isChecked():
-                filter = "Images (*.bmp *.dng *.jpeg *.jpg *.mpo *.png *.tif *.tiff *.webp *.pfm)"
+                filter_type = "Images (*.bmp *.dng *.jpeg *.jpg *.mpo *.png *.tif *.tiff *.webp *.pfm)"
             elif self.video_radiobutton.isChecked():
-                filter = "Video (*.asf *.avi *.gif *.m4v *.mkv *.mov *.mp4 *.mpeg *.mpg *.ts *.wmv *.webm)"
+                filter_type = "Video (*.asf *.avi *.gif *.m4v *.mkv *.mov *.mp4 *.mpeg *.mpg *.ts *.wmv *.webm)"
 
             # Open a file dialog to select files
             files, _ = QFileDialog.getOpenFileNames(
                 self,
                 "Choose Files",
-                "D:\\Leishmania_example",  # Default directory
-                filter,
+                filter=filter_type,
             )
 
             # If no files were selected, exit the method
