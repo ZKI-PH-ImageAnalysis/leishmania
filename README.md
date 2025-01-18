@@ -4,7 +4,7 @@ Key Features:
 - Real-time prediction of leishmania parasites
 - Intuitive user interface for easy use
 
-![GUI exmaple](./GUI_example_video2.gif)
+![GUI exmaple](GUI_example_video2.gif)
 
 ## Installing / Getting started
 
