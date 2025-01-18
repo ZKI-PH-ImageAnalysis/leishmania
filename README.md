@@ -4,6 +4,8 @@ Key Features:
 - Real-time prediction of leishmania parasites
 - Intuitive user interface for easy use
 
+![GUI exmaple](.GUI_example_video2.gif)
+
 ## Installing / Getting started
 
 A quick introduction of the minimal setup you need to get the livestream running.
