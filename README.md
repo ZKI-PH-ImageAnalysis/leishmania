@@ -277,8 +277,8 @@ If the api is external, link to api documentation. If not describe your api incl
 This dataset consists of **microscopic images of Giemsa-stained skin smears** obtained from Libyan patients diagnosed with cutaneous leishmaniasis (CL).  
 It is organized into two main parts:  
 
-- **Dataset_1** → Collected with a **Keyence BZ9000E digital microscope** (lab-based).  
-- **Dataset_2** → Extended dataset including **all images from Dataset_1**, plus an additional set collected with a **Bresser Erudit DLX microscope** (portable, low-cost).  
+- **Dataset 1** → Collected with a **Keyence BZ9000E digital microscope** (lab-based).  
+- **Dataset 2** → Extended dataset including **all images from Dataset 1**, plus an additional set collected with a **Bresser Erudit DLX microscope** (portable, low-cost).  
 
 Both datasets contain paired **Images** (`.png`) and **Labels** (`.txt`), split into `train`, `val`, and `test` subsets.
 
@@ -314,11 +314,12 @@ Both datasets contain paired **Images** (`.png`) and **Labels** (`.txt`), split 
   - 58 negative images  
   - **Total: 164 images**  
 
-👉 **Dataset_2 folder = Dataset_1 images + Dataset_2 images (extended dataset).**
+👉 **Dataset 2 folder = Dataset 1 images + Dataset 2 images (extended dataset).**
 
 ---
 
-### 3. Directory Structure  
+### 3. Directory Structure
+```text
 Dataset_1/
 │
 ├── Images/
@@ -342,10 +343,10 @@ Dataset_2/
 │   ├── train/
 │   ├── val/
 │   └── test/
-
+```
 - **Naming Convention**:  
-  - `dataset_1_image_X.png` for Dataset_1 images  
-  - `dataset_2_image_X.png` for Dataset_2 additional images  
+  - `dataset_1_image_X.png` for Dataset 1 images  
+  - `dataset_2_image_X.png` for Dataset 2 additional images  
   - Labels follow the same numbering with `.txt` extension  
 
 - **Splits**:  
@@ -373,8 +374,8 @@ Format:
 
 ## 5. Dataset Relations  
 
-- **Dataset_1** = base dataset (lab microscope, high-quality).  
-- **Dataset_2** = superset (Dataset_1 + portable microscope data).  
+- **Dataset 1** = base dataset (lab microscope, high-quality).  
+- **Dataset 2** = superset (Dataset_1 + portable microscope data).  
 - **Train/Val/Test** subsets are **disjoint** (sequential indexing prevents data leakage).  
 
 ---
