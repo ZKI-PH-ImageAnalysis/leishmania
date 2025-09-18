@@ -268,14 +268,115 @@ Explain your code style and show how to check it.
 ## Api Reference
 
 If the api is external, link to api documentation. If not describe your api including authentication methods as well as explaining all the endpoints with their required parameters.
+-->
+## Dataset
 
+### 1. Overview  
+This dataset consists of **microscopic images of Giemsa-stained skin smears** obtained from Libyan patients diagnosed with cutaneous leishmaniasis (CL).  
+It is organized into two main parts:  
 
-## Database
+- **Dataset_1** → Collected with a **Keyence BZ9000E digital microscope** (lab-based).  
+- **Dataset_2** → Extended dataset including **all images from Dataset_1**, plus an additional set collected with a **Bresser Erudit DLX microscope** (portable, low-cost).  
 
-Explaining what database (and version) has been used. Provide download links.
-Documents your database design and schemas, relations etc... 
+Both datasets contain paired **Images** (`.png`) and **Labels** (`.txt`), split into `train`, `val`, and `test` subsets.
+
+---
+
+### 2. Data Acquisition  
+
+#### Dataset 1  
+- **Patients**: 244 Libyan CL patients (confirmed by PCR at Tripoli University Hospital).  
+- **Samples**: Skin lesion smears (slit-skin or touch smears).  
+- **Preparation**: Air-dried, methanol-fixed, Giemsa-stained slides.  
+- **Imaging Setup**:  
+  - Microscope: Keyence BZ9000E (lab-grade)  
+  - Magnification: 100× oil immersion objective  
+  - Numerical Aperture (NA): 1.3  
+  - Resolution: 0.21 μm  
+- **Image Count**:  
+  - 350 positive images (parasite densities: 1–100 amastigotes per image)  
+  - 220 negative images (no parasites, controls)  
+  - **Total: 570 images**
+
+#### Dataset 2  
+- **Patients**: Additional cohort (xx patients). **<- NOCH EINFÜGEN!!!** 
+- **Samples**: Same smear preparation method.  
+- **Imaging Setup**:  
+  - Microscope: Bresser Erudit DLX (portable, battery-powered)  
+  - Camera: BRESSER MikroCam SP 5.0  
+  - Magnification: 100× oil immersion objective  
+  - Numerical Aperture (NA): 1.25  
+  - Resolution: 0.22 μm  
+- **Image Count**:  
+  - 106 positive images  
+  - 58 negative images  
+  - **Total: 164 images**  
+
+👉 **Dataset_2 folder = Dataset_1 images + Dataset_2 images (extended dataset).**
+
+---
+
+### 3. Directory Structure  
+Dataset_1/
+│
+├── Images/
+│   ├── train/   # dataset_1_image_1.png ... dataset_1_image_398.png
+│   ├── val/     # continues numbering from train
+│   └── test/
+│
+├── Labels/
+│   ├── train/   # dataset_1_image_1.txt ...
+│   ├── val/
+│   └── test/
+│
+Dataset_2/
+│
+├── Images/
+│   ├── train/   # contains both dataset_1 and dataset_2 images
+│   ├── val/
+│   └── test/
+│
+├── Labels/
+│   ├── train/
+│   ├── val/
+│   └── test/
+
+- **Naming Convention**:  
+  - `dataset_1_image_X.png` for Dataset_1 images  
+  - `dataset_2_image_X.png` for Dataset_2 additional images  
+  - Labels follow the same numbering with `.txt` extension  
+
+- **Splits**:  
+  - Train, validation, and test sets are sequential.  
+  - Example: Train = images 1–398, Val = 399–…, Test = continues onward.  
+
+---
+
+## 4. Labels & Schema  
+
+- **Image format**: `.png`  
+- **Label format**: `.txt` (YOLO-style bounding boxes).  
+- Each line = one object (parasite body).  
+
+Format: 
+
+- `class_id`:  
+  - 0 = parasite  
+- Coordinates are **normalized** by image width and height.  
+- After `class_id`, the values are given in pairs:  
+  `(x1 y1 x2 y2 … x4 y4)`
+- Every `.png` has a corresponding `.txt` file in the same split (`train/`, `val/`, `test/`).
+
+---
+
+## 5. Dataset Relations  
+
+- **Dataset_1** = base dataset (lab microscope, high-quality).  
+- **Dataset_2** = superset (Dataset_1 + portable microscope data).  
+- **Train/Val/Test** subsets are **disjoint** (sequential indexing prevents data leakage).  
+
+---
 
 ## Licensing
 
-State what the license is and how to find the text version of the license.
--->
+noch einfügen
