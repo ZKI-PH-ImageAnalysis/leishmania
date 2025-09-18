@@ -155,13 +155,10 @@ Remember: **1) Open Anaconda Prompt → 2) Activate environment → 3) Go to pro
 - Torchaudio 2.1.0
 - Torchvision 0.16.0
 - Cuda 12.1
-- NumPy 1.23.1
-- Cython 3.0.10
-- Pillow 6.2.2
 - PyQt5 5.15.10
-- pycocotools 2.0.7
 - Ultralytics 8.2.76
 - ruamel.yaml 0.18.6
+- OpenCV 4.10.0
 
 <!---
 ### Setting up Dev
