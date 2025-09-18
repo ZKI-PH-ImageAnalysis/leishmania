@@ -6,48 +6,120 @@ Key Features:
 
 ![GUI exmaple](GUI_example_video2.gif)
 
-## Installing / Getting started
+## Setup Guide (Windows only)
 
-A quick introduction of the minimal setup you need to get the livestream running.
+*A complete step-by-step installation guide (Windows edition).*
 
-Download and install miniconda
-https://docs.anaconda.com/miniconda/
-```shell
-conda create --name leishmania python=3.8
+---
+
+### 0) What you need
+- **Windows PC**
+- **Internet connection** and about **5–10 GB free disk space**
+- An **NVIDIA GPU** is optional (project will also run on CPU, just slower)
+
+---
+
+### 1) Install Miniconda
+1. Download Miniconda for Windows here:  
+   👉 https://docs.anaconda.com/miniconda/
+2. Run the installer and just click **Next** (default options are fine).
+3. After installation, close all windows and open the **Anaconda Prompt** (search for it in the Start menu).
+
+---
+
+### 2) Go to the project folder
+In the **Anaconda Prompt**, go to the folder where this project is located (the same folder where the file `environment.yml` is stored).
+
+Example (adjust the path to where you saved the project):
+
+```powershell
+cd "C:\Users\YourName\Downloads\MicroPredictor"
 ```
-```shell
+
+💡 Tip: In Windows Explorer, you can **Shift + Right Click → Copy as path**, then paste it after `cd`.
+
+---
+
+### 3) Create the environment from `environment.yml`
+Run this command inside the project folder:
+
+```powershell
+conda env create -f environment.yml
+```
+
+This installs everything needed. ⏳ It can take a few minutes.
+
+---
+
+### 4) Activate the environment
+The environment name is defined inside `environment.yml`.  
+For this project, it is **`leishmania`**.
+
+Activate it with:
+
+```powershell
 conda activate leishmania
 ```
-```shell
-conda install pytorch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 pytorch-cuda=12.1 -c pytorch -c nvidia
+
+Now you should see `(leishmania)` at the beginning of the line in your Anaconda Prompt.
+
+---
+
+### 5) Test the installation
+Check if everything works by running:
+
+```powershell
+python -c "import torch, cv2; print('PyTorch version:', torch.__version__); print('CUDA available:', torch.cuda.is_available()); print('OpenCV version:', cv2.__version__)"
 ```
-Test if PyTorch has been installed correctly
-```shell
-python
-```
-```shell
-import torch
-```
-```shell
-torch.cuda.is_available()
-```
-Output should be True
-```shell
-exit()
-```
-```shell
-pip install cython==3.0.10 matplotlib opencv-python pillow==6.2.2 numpy==1.23.1 PyQt5==5.15.10 pycocotools==2.0.7 ultralytics==8.2.76 ruamel.yaml==0.18.6
-```
-```shell
-cd path_to_MicroPredictor_folder
-```
-Under Windows, you can have the configuration file created automatically.
-```shell
-python create_config.py
-```
-```shell
+
+- If you see **`CUDA available: True`** → your NVIDIA GPU will be used.  
+- If you see **`False`** → the project will still run, but only on CPU (slower).
+
+---
+
+### 6) Run the project
+Still inside the project folder:
+
+1. Create the configuration file automatically (only needed once):
+   ```powershell
+   python create_config.py
+   ```
+
+2. Start the livestream:
+   ```powershell
+   python livestream.py
+   ```
+
+---
+
+### 7) Everyday usage
+Whenever you want to use the project again:
+
+```powershell
+conda activate leishmania
+cd "C:\Users\YourName\Downloads\MicroPredictor"
 python livestream.py
 ```
+
+---
+
+### Troubleshooting (Windows)
+- **`conda` not recognized**  
+  → You are not in the Anaconda Prompt. Close everything and open the **Anaconda Prompt** again.
+
+- **`ModuleNotFoundError` (e.g. torch, cv2, PyQt5)**  
+  → You forgot to activate the environment. Run `conda activate leishmania`.
+
+- **Wrong folder**  
+  → Make sure you are in the folder where `environment.yml` is located. Use `dir` to list files.
+
+- **`CUDA available: False` but you have a GPU**  
+  → Update your NVIDIA drivers. Otherwise, the project will run on CPU.
+
+---
+
+Done! You now have everything set up on Windows.  
+Remember: **1) Open Anaconda Prompt → 2) Activate environment → 3) Go to project folder → 4) Run livestream.**
 
 ## Developing
 
