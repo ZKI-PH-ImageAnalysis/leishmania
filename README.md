@@ -33,7 +33,7 @@ Open the **Anaconda Prompt** and run:
 
 ```powershell
 cd %USERPROFILE%\Downloads
-git clone https://github.com/YourGitHubName/Leishmania.git
+git clone https://github.com/ZKI-PH-ImageAnalysis/leishmania.git
 ```
 
 This will create a folder called **Leishmania**.  
