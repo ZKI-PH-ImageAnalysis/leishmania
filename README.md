@@ -87,7 +87,7 @@ Now you should see `(leishmania)` at the beginning of the line in your Anaconda 
 Check if everything works by running:
 
 ```powershell
-python -c "import torch, cv2; print('PyTorch version:', torch.__version__); print('CUDA available:', torch.cuda.is_available()); print('OpenCV version:', cv2.__version__)"
+python -c "import torch; print('CUDA available:', torch.cuda.is_available())
 ```
 
 - If you see **`CUDA available: True`** → your NVIDIA GPU will be used.  
