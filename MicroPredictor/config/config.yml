@@ -1,0 +1,38 @@
+version: 1.0
+
+# Camera Settings
+camera_nr: 0
+camera_resolutions:
+- [640, 480]
+- [1024, 768]
+- [1280, 720]
+- [1280, 960]
+- [1920, 1080]
+- [2592, 1944]
+used_camera_resolution: 5
+camera_brightness_min: 168
+camera_brightness_max: 168
+camera_brightness_standard: 168
+camera_brightness_used: 168
+camera_contrast_min: 0
+camera_contrast_max: 0
+camera_contrast_standard: 0
+camera_contrast_used: 0
+camera_saturation_min: 64
+camera_saturation_max: 64
+camera_saturation_standard: 64
+camera_saturation_used: 64
+camera_hue_min: 0
+camera_hue_max: 0
+camera_hue_standard: 0
+camera_hue_used: 0
+
+# Snap Image Settings
+change_scaling: false
+crop_or_resize: crop
+scaling_width: 600
+scaling_height: 600
+save_path: 'D:/testbildordner'
+
+# YOLO Parameters
+yolo_weights: d:\leishmania-main\MicroPredictor\weights\leishmania_finetuning.pt

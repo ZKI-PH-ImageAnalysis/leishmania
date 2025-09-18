@@ -59,12 +59,7 @@ scaling_width: {config_variables['scaling_width']}
 scaling_height: {config_variables['scaling_height']}
 save_path: '{config_variables['save_path']}'
 
-# Yolact Parameters
-yolact_config: {config_variables['yolact_config']}
-yolact_weights: 
-  {config_variables['yolact_weights']}
-
-# Yolo Parameters
+# YOLO Parameters
 yolo_weights: 
   {config_variables['yolo_weights']}
 """
@@ -319,12 +314,11 @@ if __name__ == "__main__":
         "scaling_width": resolutions[0][0],
         "scaling_height": resolutions[0][1],
         "save_path": f"{script_dir}\\snapped_images",
-        "yolact_config": "yolact_resnet101_blood_config",
-        "yolact_weights": f"{script_dir}\\weights\\yolact_resnet101_blood_6399_96000.pth",
         "yolo_weights": f"{script_dir}\\weights\\leishmania_finetuning.pt",
     }
 
-    # Create the configuration YAML
-    file_path = f"{script_dir}\\config.yml"
+    # Create the configuration YAML (in subfolder 'config')
+    file_path = os.path.join(script_dir, "config", "config.yml")
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
     create_config_yaml(file_path, config_variables)
     print(f"The configuration file was successfully created.")

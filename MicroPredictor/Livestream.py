@@ -4,8 +4,8 @@ import time
 
 import cv2
 import numpy as np
-from PIL import Image
-from PyQt5.QtCore import QProcess, QSize, Qt, QThread, pyqtSignal
+from models import activate_leishmania, update_frame_leishmania
+from PyQt5.QtCore import QSize, Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QIcon, QImage, QPixmap
 from PyQt5.QtWidgets import (
     QAction,
@@ -23,19 +23,12 @@ from PyQt5.QtWidgets import (
     QScrollArea,
     QSizePolicy,
     QSlider,
+    QSplitter,
     QToolBar,
     QVBoxLayout,
     QWidget,
 )
 from ruamel.yaml import YAML
-
-from models import (
-    YolactWorker,
-    activate_blood_cell_output,
-    activate_leishmania,
-    update_frame_blood_cell_count,
-    update_frame_leishmania,
-)
 
 # Loading the config File
 main_path = os.path.dirname(os.path.abspath(__file__))
@@ -49,7 +42,7 @@ def load_config() -> None:
     """Load the configuration file"""
     global config
     try:
-        with open(os.path.join(main_path, "config.yml"), "r") as file:
+        with open(os.path.join(main_path, "config", "config.yml"), "r") as file:
             config = yaml.load(file)
     except FileNotFoundError:
         sys.exit(
@@ -125,7 +118,7 @@ class Settings(QWidget):
         # Set the main layout for the Settings widget
         self.setLayout(self.layout)
 
-    def change_resolution(self) -> None:
+    def change_resolution(self, _text: str) -> None:
         """
         Handle resolution changes triggered by the combo box.
 
@@ -134,7 +127,7 @@ class Settings(QWidget):
         """
         # Update the resolution setting in the YAML configuration file
         update_yaml_parameter(
-            os.path.join(main_path, "config.yml"),
+            os.path.join(main_path, "config", "config.yml"),
             "used_camera_resolution",
             self.resolution_combobox.currentIndex(),
         )
@@ -277,37 +270,34 @@ class SnapSettings(QWidget):
         # Set the main layout for the widget
         self.setLayout(self.layout)
 
-    def scaling_groupbox_toggled(self):
+    def scaling_groupbox_toggled(self, checked: bool):
         """
         Handle toggling of the scaling group box.
 
         Updates the configuration and reloads the settings.
         """
         update_yaml_parameter(
-            os.path.join(main_path, "config.yml"),
+            os.path.join(main_path, "config", "config.yml"),
             "change_scaling",
-            self.scaling_groupbox.isChecked(),
+            bool(checked),
         )
         load_config()  # Reload the configuration to reflect changes
 
-    def scaling_radiobuttons_toggled(self):
+    def scaling_radiobuttons_toggled(self, checked: bool):
         """
         Handle toggling between "Crop" and "Resize" modes.
 
         Updates the configuration and refreshes the scaling resolution label.
         """
-        if self.crop_radiobutton.isChecked():
-            update_yaml_parameter(
-                os.path.join(main_path, "config.yml"),
-                "crop_or_resize",
-                "crop",
-            )
-        else:
-            update_yaml_parameter(
-                os.path.join(main_path, "config.yml"),
-                "crop_or_resize",
-                "resize",
-            )
+        if not checked:
+            return
+        sender = self.sender()
+        mode = "crop" if sender is self.crop_radiobutton else "resize"
+        update_yaml_parameter(
+            os.path.join(main_path, "config", "config.yml"),
+            "crop_or_resize",
+            mode,
+        )
         load_config()  # Reload the configuration
         self.set_scaling_resolution_label()  # Update the resolution label
 
@@ -344,7 +334,7 @@ class SnapSettings(QWidget):
             <= config["camera_resolutions"][config["used_camera_resolution"]][0]
         ):
             update_yaml_parameter(
-                os.path.join(main_path, "config.yml"),
+                os.path.join(main_path, "config", "config.yml"),
                 "scaling_width",
                 int(self.width_input_field.text()),
             )
@@ -357,13 +347,29 @@ class SnapSettings(QWidget):
             <= config["camera_resolutions"][config["used_camera_resolution"]][1]
         ):
             update_yaml_parameter(
-                os.path.join(main_path, "config.yml"),
+                os.path.join(main_path, "config", "config.yml"),
                 "scaling_height",
                 int(self.height_input_field.text()),
             )
 
         load_config()  # Reload the configuration to reflect changes
         self.set_scaling_resolution_label()  # Update the resolution label
+
+    def closeEvent(self, event):
+        """Disconnect Snap Settings signals to avoid callbacks during teardown."""
+        try:
+            self.scaling_groupbox.toggled.disconnect(self.scaling_groupbox_toggled)
+        except Exception:
+            pass
+        try:
+            self.crop_radiobutton.toggled.disconnect(self.scaling_radiobuttons_toggled)
+        except Exception:
+            pass
+        try:
+            self.resize_radiobutton.toggled.disconnect(self.scaling_radiobuttons_toggled)
+        except Exception:
+            pass
+        super().closeEvent(event)
 
 
 class FileDialogWorker(QThread):
@@ -386,7 +392,7 @@ class FileDialogWorker(QThread):
         if selected_dir != "":
             # Emit the signal to send the selected directory back to the main thread
             update_yaml_parameter(
-                os.path.join(main_path, "config.yml"),
+                os.path.join(main_path, "config", "config.yml"),
                 "save_path",
                 selected_dir,
             )
@@ -395,7 +401,6 @@ class FileDialogWorker(QThread):
 class CameraThread(QThread):
     # Signal sent by the captured image
     frame_ready = pyqtSignal(QImage, float)
-    send_count_update = pyqtSignal(int, int, int)
     open_dialog_signal = pyqtSignal()
 
     def __init__(self, value_threshold: int) -> None:
@@ -454,23 +459,6 @@ class CameraThread(QThread):
                     frame = self.update_frame_threshold(frame)
                 elif self.color_space and self.choosen_color_space == 1:
                     frame = self.update_frame_greyscale(frame)
-                elif self.choosed_model == "blood_cell_count":
-                    prediction_factor = self.get_prediction_factor(1000, 1000)
-                    prediction_frame = self.get_prediction_frame(
-                        frame, prediction_factor
-                    )
-                    masked_frame, RBC, WBC, PLT = update_frame_blood_cell_count(
-                        self,
-                        prediction_frame,
-                        self.model,
-                        self.RBC_color,
-                        self.WBC_color,
-                        self.PLT_color,
-                    )
-                    frame = self.put_mask_on_original_frame(
-                        frame, prediction_frame, masked_frame
-                    )
-                    self.send_count_update.emit(RBC, WBC, PLT)  # Emit cell count data
                 elif self.choosed_model == "leishmania":
                     prediction_factor = self.get_prediction_factor(1920, 1440)
                     prediction_frame = self.get_prediction_frame(
@@ -487,10 +475,7 @@ class CameraThread(QThread):
 
                 # Convert the frame to RGB format for display
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-                # Adjust frame size if necessary
-                if self.fit_image:
-                    frame = self.fit_image_size(frame)
+                # Do not resize in the worker thread; scaling is handled in UI
 
                 # Determine the image format and prepare it for display
                 if len(frame.shape) == 3:  # Color image
@@ -498,10 +483,12 @@ class CameraThread(QThread):
                     bytes_per_line = ch * w
                     image_format = QImage.Format_RGB888
                 elif len(frame.shape) == 2:  # Grayscale image
-                    h, bytes_per_line = frame.shape
+                    h, w = frame.shape
+                    bytes_per_line = w
                     image_format = QImage.Format_Grayscale8
 
-                qt_img = QImage(frame.data, w, h, bytes_per_line, image_format)
+                # Create QImage referencing numpy buffer, then deep-copy to detach
+                qt_img = QImage(frame.data, w, h, bytes_per_line, image_format).copy()
 
                 # Emit the processed frame and FPS to the main thread
                 self.frame_ready.emit(qt_img, fps)
@@ -530,25 +517,25 @@ class CameraThread(QThread):
         # Update the corresponding configuration value
         if property == 10:  # Brightness
             update_yaml_parameter(
-                os.path.join(main_path, "config.yml"),
+                os.path.join(main_path, "config", "config.yml"),
                 "camera_brightness_used",
                 int(value),
             )
         elif property == 11:  # Contrast
             update_yaml_parameter(
-                os.path.join(main_path, "config.yml"),
+                os.path.join(main_path, "config", "config.yml"),
                 "camera_contrast_used",
                 int(value),
             )
         elif property == 12:  # Saturation
             update_yaml_parameter(
-                os.path.join(main_path, "config.yml"),
+                os.path.join(main_path, "config", "config.yml"),
                 "camera_saturation_used",
                 int(value),
             )
         elif property == 13:  # Hue
             update_yaml_parameter(
-                os.path.join(main_path, "config.yml"),
+                os.path.join(main_path, "config", "config.yml"),
                 "camera_hue_used",
                 int(value),
             )
@@ -755,56 +742,13 @@ class CameraThread(QThread):
 
         Parameters:
             model (str): The name of the selected model.
-                        "No Model", "Blood Cell Count", or "Leishmania".
+                        "No Model" or "Leishmania".
         """
         if model == "No Model":
             self.choosed_model = "no_model"
-        elif model == "Blood Cell Count":
-            # Initialize worker thread for blood cell count model
-            self.worker = YolactWorker(config)
-            self.worker.model_initialized.connect(self.on_model_initialized)
-            self.worker.error_occurred.connect(self.on_error_occurred)
-            self.worker.start()  # Start the worker thread
         elif model == "Leishmania":
             activate_leishmania(self, config)
             self.choosed_model = "leishmania"
-
-    def on_model_initialized(self, model) -> None:
-        """
-        Handle the initialization of the model.
-
-        Parameters:
-            model: The initialized model object.
-        """
-        self.model = model
-        self.RBC_color = (0, 0, 255)  # Red for RBC
-        self.WBC_color = (255, 0, 0)  # Blue for WBC
-        self.PLT_color = (0, 255, 0)  # Green for PLT
-        self.choosed_model = "blood_cell_count"
-
-    def change_blood_cell_color(self, cell_type: str, color: tuple) -> None:
-        """
-        Change the color representation for specific blood cell types.
-
-        Parameters:
-            cell_type (str): The cell type ("RBC", "WBC", or "PLT").
-            color (tuple): The new color in (B, G, R) format.
-        """
-        if cell_type == "RBC":
-            self.RBC_color = color
-        elif cell_type == "WBC":
-            self.WBC_color = color
-        elif cell_type == "PLT":
-            self.PLT_color = color
-
-    def on_error_occurred(self, error_message: str) -> None:
-        """
-        Handle errors that occur during model initialization or processing.
-
-        Parameters:
-            error_message (str): The error message to display.
-        """
-        print(f"Error during model initialization: {error_message}")
 
     def snap_image_clicked(self) -> None:
         """
@@ -880,6 +824,7 @@ class VideoStream(QMainWindow):
         self.setWindowTitle("Micro Predictor")
         self.setGeometry(100, 100, 800, 600)
         self.stream_running = False  # Flag to indicate if the stream is running
+        self.fit_image_display = True  # Scale to fit viewport by default
 
         # Set up the central widget and main layout
         central_widget = QWidget(self)
@@ -896,7 +841,7 @@ class VideoStream(QMainWindow):
 
         # Add Start Stream button to the toolbar
         self.start_button = QAction(
-            QIcon(f"{main_path}\\buttons\\start_button.png"),
+            QIcon(os.path.join(main_path, "assets", "buttons", "start_button.png")),
             "Start Stream",
             self,
         )
@@ -908,7 +853,7 @@ class VideoStream(QMainWindow):
 
         # Add Pause Stream button to the toolbar
         self.pause_button = QAction(
-            QIcon(f"{main_path}\\buttons\\pause_button.png"),
+            QIcon(os.path.join(main_path, "assets", "buttons", "pause_button.png")),
             "Pause Stream",
             self,
         )
@@ -922,7 +867,7 @@ class VideoStream(QMainWindow):
 
         # Add Stop Stream button to the toolbar
         self.stop_button = QAction(
-            QIcon(f"{main_path}\\buttons\\stop_button.png"),
+            QIcon(os.path.join(main_path, "assets", "buttons", "stop_button.png")),
             "Stop Stream",
             self,
         )
@@ -935,7 +880,7 @@ class VideoStream(QMainWindow):
 
         # Add Snap Image button to the toolbar
         self.snap_button = QAction(
-            QIcon(f"{main_path}\\buttons\\snap_button.png"),
+            QIcon(os.path.join(main_path, "assets", "buttons", "snap_button.png")),
             "Snap Image",
             self,
         )
@@ -948,7 +893,7 @@ class VideoStream(QMainWindow):
 
         # Add Set Save Path button to the toolbar
         self.save_path_button = QAction(
-            QIcon(f"{main_path}\\buttons\\save_path_button.png"),
+            QIcon(os.path.join(main_path, "assets", "buttons", "save_path_button.png")),
             "Set Save Path",
             self,
         )
@@ -965,8 +910,7 @@ class VideoStream(QMainWindow):
         self.open_analyze_window_action.triggered.connect(self.open_analyze_window)
         self.main_menu.addAction(self.open_analyze_window_action)
 
-        # Create and connect the Analyze Process
-        self.analyze_process = QProcess(self)
+        # Analyze window runs in-process; no external QProcess needed
 
         # Add other menu items
         self.main_menu.addSeparator()
@@ -1004,17 +948,24 @@ class VideoStream(QMainWindow):
         self.fps_label = QLabel("")
         self.toolbar.addWidget(self.fps_label)
 
-        # Create layout for GUI elements below the toolbar
+        # Create layout holder (kept for compatibility) and a splitter for draggable panes
         self.middle_GUI_layout = QHBoxLayout()
 
-        # Add vertical box for settings and sliders (options panel)
-        self.options_groupbox = QVBoxLayout()
+        # LEFT: settings panel wrapped in a scroll area
+        self.left_scroll_area = QScrollArea()
+        self.left_scroll_area.setWidgetResizable(True)
+        self.left_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.left_scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        # Constrain left sidebar width; allow collapse via splitter
+        self.left_scroll_area.setFixedWidth(240)
+        self.options_widget = QWidget()
+        self.options_groupbox = QVBoxLayout(self.options_widget)
 
         # Create a brightness control group box
         self.brightness_slider_groupbox = QGroupBox("Change Brightness")
         self.brightness_slider_groupbox.setCheckable(False)
         self.brightness_slider_groupbox.setDisabled(True)
-        self.brightness_slider_groupbox.setMaximumWidth(200)
+        self.brightness_slider_groupbox.setMaximumWidth(240)
         self.options_groupbox.addWidget(self.brightness_slider_groupbox)
 
         # Add a slider to control brightness
@@ -1025,7 +976,7 @@ class VideoStream(QMainWindow):
         self.brightness_slider.setMaximum(config["camera_brightness_max"])
         self.brightness_slider.setTickInterval(1)
         self.brightness_slider.setValue(config["camera_brightness_used"])
-        self.brightness_slider.setMaximumWidth(200)
+        self.brightness_slider.setMaximumWidth(240)
         self.brightness_slider.valueChanged.connect(
             lambda: self.change_property(
                 cv2.CAP_PROP_BRIGHTNESS, self.brightness_slider.value(), "brightness"
@@ -1064,7 +1015,7 @@ class VideoStream(QMainWindow):
             True
         )  # Disable the group box by default
         self.contrast_slider_groupbox.setMaximumWidth(
-            200
+            240
         )  # Limit the width of the group box
 
         # Add the contrast group box to the options layout
@@ -1088,7 +1039,7 @@ class VideoStream(QMainWindow):
         self.contrast_slider.setValue(
             config["camera_contrast_used"]
         )  # Set initial contrast value
-        self.contrast_slider.setMaximumWidth(200)  # Limit the slider width
+        self.contrast_slider.setMaximumWidth(240)  # Limit the slider width
         self.contrast_slider.valueChanged.connect(
             lambda: self.change_property(
                 cv2.CAP_PROP_CONTRAST, self.contrast_slider.value(), "contrast"
@@ -1130,7 +1081,7 @@ class VideoStream(QMainWindow):
         self.saturation_slider_groupbox = QGroupBox("Change Saturation")
         self.saturation_slider_groupbox.setCheckable(False)
         self.saturation_slider_groupbox.setDisabled(True)
-        self.saturation_slider_groupbox.setMaximumWidth(200)
+        self.saturation_slider_groupbox.setMaximumWidth(240)
 
         # Add the saturation group box to the options layout
         self.options_groupbox.addWidget(self.saturation_slider_groupbox)
@@ -1145,7 +1096,7 @@ class VideoStream(QMainWindow):
         self.saturation_slider.setMaximum(config["camera_saturation_max"])
         self.saturation_slider.setTickInterval(1)
         self.saturation_slider.setValue(config["camera_saturation_used"])
-        self.saturation_slider.setMaximumWidth(200)
+        self.saturation_slider.setMaximumWidth(240)
         self.saturation_slider.valueChanged.connect(
             lambda: self.change_property(
                 cv2.CAP_PROP_SATURATION, self.saturation_slider.value(), "saturation"
@@ -1185,7 +1136,7 @@ class VideoStream(QMainWindow):
         self.hue_slider_groupbox = QGroupBox("Change hue")
         self.hue_slider_groupbox.setCheckable(False)
         self.hue_slider_groupbox.setDisabled(True)
-        self.hue_slider_groupbox.setMaximumWidth(200)
+        self.hue_slider_groupbox.setMaximumWidth(240)
 
         # Add the hue group box to the options layout
         self.options_groupbox.addWidget(self.hue_slider_groupbox)
@@ -1200,7 +1151,7 @@ class VideoStream(QMainWindow):
         self.hue_slider.setMaximum(config["camera_hue_max"])
         self.hue_slider.setTickInterval(1)
         self.hue_slider.setValue(config["camera_hue_used"])
-        self.hue_slider.setMaximumWidth(200)
+        self.hue_slider.setMaximumWidth(240)
         self.hue_slider.valueChanged.connect(
             lambda: self.change_property(
                 cv2.CAP_PROP_HUE, self.hue_slider.value(), "hue"
@@ -1281,7 +1232,7 @@ class VideoStream(QMainWindow):
         )  # Allow toggling of the threshold group box
         self.threshold_groupbox.setChecked(False)  # Initially unchecked
         self.threshold_groupbox.setDisabled(True)  # Disable the group box by default
-        self.threshold_groupbox.setMaximumWidth(200)  # Limit the group box width
+        self.threshold_groupbox.setMaximumWidth(240)  # Limit the group box width
         self.threshold_groupbox.toggled.connect(
             self.threshold_checkbox_toggled
         )  # Connect toggle event to a handler
@@ -1299,7 +1250,7 @@ class VideoStream(QMainWindow):
         self.threshold_slider.setMaximum(255)  # Set maximum value
         self.threshold_slider.setTickInterval(1)  # Set the slider step size
         self.threshold_slider.setValue(128)  # Set initial value
-        self.threshold_slider.setMaximumWidth(200)  # Limit the slider width
+        self.threshold_slider.setMaximumWidth(240)  # Limit the slider width
         self.threshold_slider.valueChanged.connect(
             self.change_slider_value
         )  # Connect value change to a handler
@@ -1369,9 +1320,7 @@ class VideoStream(QMainWindow):
 
         # Add a dropdown menu to select the model
         self.model_combobox = QComboBox()
-        self.model_combobox.addItems(
-            ["No Model", "Blood Cell Count", "Leishmania"]
-        )  # Add options to the dropdown
+        self.model_combobox.addItems(["No Model", "Leishmania"])  # Options
         self.model_vbox.addWidget(self.model_combobox)  # Add to the vertical layout
         self.model_combobox.currentTextChanged.connect(
             self.on_model_combobox_change
@@ -1380,8 +1329,8 @@ class VideoStream(QMainWindow):
         # Add a stretch to push group boxes to the top of the options layout
         self.options_groupbox.addStretch()
 
-        # Add the options layout to the second row of the GUI
-        self.middle_GUI_layout.addLayout(self.options_groupbox)
+        # Add the options widget to the left scroll area
+        self.left_scroll_area.setWidget(self.options_widget)
 
         # Create a scrollable area to display the video feed
         self.scroll_area = QScrollArea()
@@ -1400,18 +1349,24 @@ class VideoStream(QMainWindow):
         self.video_label.setAlignment(Qt.AlignCenter)  # Center-align the video content
         self.scroll_area.setWidget(self.video_label)
 
-        # Add the scrollable area to the second row of the GUI
-        self.middle_GUI_layout.addWidget(self.scroll_area)
+        # Center video area prepared; added to splitter below
 
-        # Create a vertical layout for model outputs and settings
-        self.output_vgroupbox = QVBoxLayout()
+        # RIGHT: model settings wrapped in a scroll area
+        self.right_scroll_area = QScrollArea()
+        self.right_scroll_area.setWidgetResizable(True)
+        self.right_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.right_scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        # Constrain right sidebar width; allow collapse via splitter
+        self.right_scroll_area.setFixedWidth(200)
+        self.right_container_widget = QWidget()
+        self.output_vgroupbox = QVBoxLayout(self.right_container_widget)
 
         # Add a box for outputs and settings of the current model
         self.output_groupbox = QGroupBox("Model Settings")
         self.output_groupbox.setCheckable(
             False
         )  # Disable checkbox functionality for the group box
-        self.output_groupbox.setFixedWidth(200)  # Fix the width of the group box
+        self.output_groupbox.setMaximumWidth(200)  
         self.output_vgroupbox.addWidget(self.output_groupbox)
 
         # Create a vertical layout for the content inside the model settings box
@@ -1421,11 +1376,31 @@ class VideoStream(QMainWindow):
         # Add a stretch to push the model settings box to the top
         self.output_vgroupbox.addStretch()
 
-        # Add the model output layout to the second row of the GUI
-        self.middle_GUI_layout.addLayout(self.output_vgroupbox)
+        # Add the right container to the right scroll area
+        self.right_scroll_area.setWidget(self.right_container_widget)
 
-        # Add the complete second row to the main layout
-        self.layout.addLayout(self.middle_GUI_layout)
+        # Build a splitter to allow dragging/collapsing sidebars
+        self.middle_splitter = QSplitter(Qt.Horizontal)
+        self.middle_splitter.addWidget(self.left_scroll_area)
+        self.middle_splitter.addWidget(self.scroll_area)
+        self.middle_splitter.addWidget(self.right_scroll_area)
+        # Make center stretch, sides fixed to max 240 but collapsible
+        self.middle_splitter.setStretchFactor(0, 0)
+        self.middle_splitter.setStretchFactor(1, 1)
+        self.middle_splitter.setStretchFactor(2, 0)
+        try:
+            self.middle_splitter.setCollapsible(0, True)
+            self.middle_splitter.setCollapsible(2, True)
+        except Exception:
+            pass
+        # Initial sizes: left/right 240, center consumes remaining
+        try:
+            self.middle_splitter.setSizes([240, 840, 200])
+        except Exception:
+            pass
+
+        # Add the splitter row to the main layout
+        self.layout.addWidget(self.middle_splitter)
 
         # Maximize the window to fit the screen
         self.showMaximized()
@@ -1433,7 +1408,7 @@ class VideoStream(QMainWindow):
         # Create a worker for file dialog operations
         self.save_path_worker = FileDialogWorker()
 
-    def start_stream(self):
+    def start_stream(self, checked: bool = False):
         """
         Start the video stream and initialize the camera thread.
 
@@ -1472,7 +1447,7 @@ class VideoStream(QMainWindow):
             self.camera_thread.pause_stream(False)
             self.pause_button.setChecked(False)
 
-    def pause_stream(self):
+    def pause_stream(self, checked: bool = False):
         """
         Pause or resume the video stream based on the state of the pause button.
 
@@ -1489,7 +1464,7 @@ class VideoStream(QMainWindow):
         else:
             self.camera_thread.pause_stream(False)  # Resume the stream
 
-    def stop_stream(self):
+    def stop_stream(self, checked: bool = False):
         """
         Stop the video stream and reset the UI components.
 
@@ -1540,7 +1515,7 @@ class VideoStream(QMainWindow):
         """
         self.video_label.clear()
 
-    def snap_image_clicked(self):
+    def snap_image_clicked(self, checked: bool = False):
         """
         Capture a snapshot of the current video frame.
 
@@ -1550,30 +1525,34 @@ class VideoStream(QMainWindow):
             return
         self.camera_thread.snap_image_clicked()  # Trigger the snapshot functionality
 
-    def set_save_path(self):
+    def set_save_path(self, checked: bool = False):
         """
         Open a dialog to set the save path for captured snapshots.
 
         This functionality is only available when the stream is running.
         """
-        # if not self.stream_running:
-        #    return
-        self.save_path_worker.start()  # Start the file dialog worker
+        selected_dir = QFileDialog.getExistingDirectory(self, "Select Save Path")
+        if selected_dir:
+            update_yaml_parameter(
+                os.path.join(main_path, "config", "config.yml"),
+                "save_path",
+                selected_dir,
+            )
 
-    def shown_image_radiobuttons_toggled(self):
+    def shown_image_radiobuttons_toggled(self, checked: bool = False):
         """
         Handle toggling between "Fitting Resolution" and "Full Resolution" modes.
 
         Updates the camera thread to change the resolution mode based on the selected radio button.
         """
+        # Track desired display mode locally for DPI-consistent scaling
         if self.fitting_resolution_radiobutton.isChecked():
-            self.camera_thread.change_to_full_resolution_image(
-                False
-            )  # Set to fitting resolution
+            self.fit_image_display = True
+            # Keep call for backward compatibility; thread no longer rescales
+            self.camera_thread.change_to_full_resolution_image(False)
         elif self.full_resolution_radiobutton.isChecked():
-            self.camera_thread.change_to_full_resolution_image(
-                True
-            )  # Set to full resolution
+            self.fit_image_display = False
+            self.camera_thread.change_to_full_resolution_image(True)
 
     def update_image(self, q_image, fps):
         """
@@ -1585,12 +1564,18 @@ class VideoStream(QMainWindow):
         """
         # Convert QImage to QPixmap and update the QLabel
         pixmap = QPixmap.fromImage(q_image)
+        if getattr(self, "fit_image_display", True):
+            # Scale to current viewport, keep aspect ratio for consistent look
+            target_size = self.scroll_area.viewport().size()
+            pixmap = pixmap.scaled(
+                target_size, Qt.KeepAspectRatio, Qt.SmoothTransformation
+            )
         self.video_label.setPixmap(pixmap)
 
         # Update the FPS label with the current value
         self.fps_label.setText(f"FPS: {fps:.2f}")
 
-    def threshold_checkbox_toggled(self):
+    def threshold_checkbox_toggled(self, checked: bool):
         """
         Enable or disable the threshold feature.
 
@@ -1622,7 +1607,7 @@ class VideoStream(QMainWindow):
             value
         )  # Update the camera thread with the new value
 
-    def color_space_checkbox_toggled(self):
+    def color_space_checkbox_toggled(self, checked: bool):
         """
         Enable or disable the color space feature.
 
@@ -1641,7 +1626,7 @@ class VideoStream(QMainWindow):
                 self.threshold_groupbox.setDisabled(False)
                 self.model_groupbox.setDisabled(False)
 
-    def color_space_radiobuttons_toggled(self):
+    def color_space_radiobuttons_toggled(self, checked: bool = False):
         """
         Handle toggling between "Color" and "Greyscale" modes.
 
@@ -1741,37 +1726,12 @@ class VideoStream(QMainWindow):
             model: The selected model name from the combo box.
         """
 
-        def update_blood_cell_count(RBC, WBC, PLT):
-            """
-            Update the labels for blood cell count predictions.
-
-            Parameters:
-                RBC: Red Blood Cell count.
-                WBC: White Blood Cell count.
-                PLT: Platelet count.
-            """
-            if hasattr(self, "RBC_output_label") and self.RBC_output_label is not None:
-                self.RBC_output_label.setText(f"RBC: {RBC}")
-            if hasattr(self, "WBC_output_label") and self.WBC_output_label is not None:
-                self.WBC_output_label.setText(f"WBC: {WBC}")
-            if hasattr(self, "PLT_output_label") and self.PLT_output_label is not None:
-                self.PLT_output_label.setText(f"PLT: {PLT}")
-
         if self.stream_running:
             if model == "No Model":
                 self.reset_model()
                 self.camera_thread.chosen_model("No Model")
                 self.threshold_groupbox.setDisabled(False)
                 self.colorspace_groupbox.setDisabled(False)
-            elif model == "Blood Cell Count":
-                self.reset_model()
-                activate_blood_cell_output(
-                    self
-                )  # Enable specific output UI for blood cell count
-                self.camera_thread.send_count_update.connect(update_blood_cell_count)
-                self.camera_thread.chosen_model("Blood Cell Count")
-                self.threshold_groupbox.setDisabled(True)
-                self.colorspace_groupbox.setDisabled(True)
             elif model == "Leishmania":
                 self.reset_model()
                 self.camera_thread.chosen_model("Leishmania")
@@ -1799,10 +1759,7 @@ class VideoStream(QMainWindow):
             # Recursively clear nested layouts
             self.clear_layout(layout)
 
-        # Reset model-specific label attributes to avoid invalid references
-        self.RBC_output_label = None
-        self.WBC_output_label = None
-        self.PLT_output_label = None
+        # No model-specific labels to reset at the moment
 
     def clear_layout(self, layout):
         """
@@ -1839,15 +1796,20 @@ class VideoStream(QMainWindow):
 
     def open_analyze_window(self):
         """
-        Open the analyze window script in a new process.
+        Open the analyze window in the same process.
 
-        The script path is relative to the current file.
+        The window is lightweight; predictions start a separate process on Start.
         """
-        script_path = os.path.join(os.path.dirname(__file__), "analyze_window.py")
-        self.analyze_process.start(
-            "python",
-            [script_path],
-        )
+        try:
+            from ui.analyze_window import analyze_window as AnalyzeWindow
+        except Exception:
+            # Fallback: modify sys.path to include MicroPredictor for import
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            from ui.analyze_window import analyze_window as AnalyzeWindow
+
+        # Keep a reference so it isn't garbage collected
+        self.analyze_w = AnalyzeWindow()
+        self.analyze_w.show()
 
     def open_snap_settings(self):
         """
@@ -1869,9 +1831,16 @@ class VideoStream(QMainWindow):
 
 
 if __name__ == "__main__":
+    # Enable High-DPI scaling for consistent UI across resolutions
+    try:
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    except Exception:
+        pass
+    os.environ.setdefault("QT_AUTO_SCREEN_SCALE_FACTOR", "1")
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
-    app.setWindowIcon(QIcon(os.path.join(main_path, "window_icon.png")))
+    app.setWindowIcon(QIcon(os.path.join(main_path, "assets", "icons", "window_icon.png")))
     window = VideoStream()
     window.show()
     sys.exit(app.exec_())
