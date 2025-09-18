@@ -1,0 +1,17 @@
+name: leishmania
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.8
+  - pytorch=2.1.0
+  - torchvision=0.16.0
+  - torchaudio=2.1.0
+  - pytorch-cuda=12.1  # benötigt kompatiblen NVIDIA-Treiber
+  - pip
+  - pip:
+      - opencv-python
+      - PyQt5==5.15.10
+      - ultralytics==8.2.76
+      - ruamel.yaml==0.18.6
