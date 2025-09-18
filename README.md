@@ -239,7 +239,7 @@ change_scaling: false
 crop_or_resize: crop
 scaling_width: 648
 scaling_height: 486
-save_path: 'd:\Leischmanien\MicroPredictor-main\MicroPredictor\snapped_images'
+save_path: 'd:\Downloads\Leishmania\MicroPredictor\snapped_images'
 
 # Yolact Parameters
 yolact_config: yolact_resnet101_blood_config
