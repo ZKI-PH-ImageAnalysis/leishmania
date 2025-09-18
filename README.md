@@ -12,10 +12,11 @@ Key Features:
 
 ---
 
-### 0) What you need
+### What you need
 - **Windows PC**
 - **Internet connection** and about **5–10 GB free disk space**
 - An **NVIDIA GPU** is optional (project will also run on CPU, just slower)
+- A **microscope camera** connected to your PC (required for livestream)
 
 ---
 
@@ -27,20 +28,31 @@ Key Features:
 
 ---
 
-### 2) Go to the project folder
-In the **Anaconda Prompt**, go to the folder where this project is located (the same folder where the file `environment.yml` is stored).
-
-Example (adjust the path to where you saved the project):
+### 2) Download the project from GitHub
+Open the **Anaconda Prompt** and run:
 
 ```powershell
-cd "C:\Users\YourName\Downloads\MicroPredictor"
+cd %USERPROFILE%\Downloads
+git clone https://github.com/YourGitHubName/Leishmania.git
 ```
 
-💡 Tip: In Windows Explorer, you can **Shift + Right Click → Copy as path**, then paste it after `cd`.
+This will create a folder called **Leishmania**.  
+Inside it, you will find the **MicroPredictor** folder that contains all the code.
 
 ---
 
-### 3) Create the environment from `environment.yml`
+### 3) Go to the project folder
+Now move into the project folder:
+
+```powershell
+cd "%USERPROFILE%\Downloads\Leishmania\MicroPredictor"
+```
+
+💡 Tip: If you saved the project somewhere else, adjust the path.
+
+---
+
+### 4) Create the environment from `environment.yml`
 Run this command inside the project folder:
 
 ```powershell
@@ -49,11 +61,17 @@ conda env create -f environment.yml
 
 This installs everything needed. ⏳ It can take a few minutes.
 
+If you already created the environment before and just want to update it:
+
+```powershell
+conda env update -f environment.yml --prune
+```
+
 ---
 
-### 4) Activate the environment
+### 5) Activate the environment
 The environment name is defined inside `environment.yml`.  
-For this project, it is **`leishmania`**.
+For this project, it is usually **`leishmania`**.
 
 Activate it with:
 
@@ -65,7 +83,7 @@ Now you should see `(leishmania)` at the beginning of the line in your Anaconda 
 
 ---
 
-### 5) Test the installation
+### 6) Test the installation
 Check if everything works by running:
 
 ```powershell
@@ -77,8 +95,14 @@ python -c "import torch, cv2; print('PyTorch version:', torch.__version__); prin
 
 ---
 
-### 6) Run the project
-Still inside the project folder:
+### 7) Run the project
+Make sure you are still in the project folder:
+
+```powershell
+cd "%USERPROFILE%\Downloads\Leishmania\MicroPredictor"
+```
+
+⚠️ **Important:** Ensure that your microscope camera is connected to your PC **before** creating the config file.
 
 1. Create the configuration file automatically (only needed once):
    ```powershell
@@ -92,12 +116,12 @@ Still inside the project folder:
 
 ---
 
-### 7) Everyday usage
+### 8) Everyday usage
 Whenever you want to use the project again:
 
 ```powershell
 conda activate leishmania
-cd "C:\Users\YourName\Downloads\MicroPredictor"
+cd "%USERPROFILE%\Downloads\Leishmania\MicroPredictor"
 python livestream.py
 ```
 
@@ -116,11 +140,13 @@ python livestream.py
 - **`CUDA available: False` but you have a GPU**  
   → Update your NVIDIA drivers. Otherwise, the project will run on CPU.
 
+- **Camera not working**  
+  → Double-check that your microscope camera is plugged in **before** running `create_config.py`. If not, close everything, connect the camera, and run the command again.
+
 ---
 
-Done! You now have everything set up on Windows.  
+✅ Done! You now have everything set up on Windows.  
 Remember: **1) Open Anaconda Prompt → 2) Activate environment → 3) Go to project folder → 4) Run livestream.**
-
 ## Developing
 
 ### Built With
