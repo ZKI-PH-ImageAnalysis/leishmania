@@ -239,7 +239,7 @@ Both datasets contain paired **Images** (`.png`) and **Labels** (`.txt`), split 
   - **Total: 570 images**
 
 #### Dataset 2  
-- **Patients**: Additional cohort (xx patients). **<- NOCH EINFÜGEN!!!** 
+- **Patients**: Additional cohort (6 patients).
 - **Samples**: Same smear preparation method.  
 - **Imaging Setup**:  
   - Microscope: Bresser Erudit DLX (portable, battery-powered)  
@@ -315,9 +315,3 @@ Format:
 - **Dataset 1** = base dataset (lab microscope, high-quality).  
 - **Dataset 2** = superset (Dataset_1 + portable microscope data).  
 - **Train/Val/Test** subsets are **disjoint** (sequential indexing prevents data leakage).  
-
----
-
-## Licensing
-
-noch einfügen
