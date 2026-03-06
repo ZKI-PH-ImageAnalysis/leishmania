@@ -209,7 +209,7 @@ yolo_weights:
 
 ## Dataset
 
-**Dataset available at:** LINK EINFÜGEN
+**Dataset available at:** [Zenodo](https://zenodo.org/records/17964511)
 
 ### 1. Overview  
 This dataset consists of **microscopic images of Giemsa-stained skin smears** obtained from Libyan patients diagnosed with cutaneous leishmaniasis (CL).  
