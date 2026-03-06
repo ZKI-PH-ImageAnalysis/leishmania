@@ -197,14 +197,9 @@ scaling_width: 648
 scaling_height: 486
 save_path: 'd:\Downloads\Leishmania\MicroPredictor\snapped_images'
 
-# Yolact Parameters
-yolact_config: yolact_resnet101_blood_config
-yolact_weights: 
-  path\to\folder\weights\yolact_resnet101_blood_6399_96000.pth
-
 # Yolo Parameters
 yolo_weights: 
-  path\to\folder\weights\leishmania_finetuning.pt
+  path\to\folder\weights\universal_model.pt
 ```
 
 ## Dataset
