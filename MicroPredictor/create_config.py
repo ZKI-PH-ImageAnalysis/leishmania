@@ -314,8 +314,9 @@ if __name__ == "__main__":
         "scaling_width": resolutions[0][0],
         "scaling_height": resolutions[0][1],
         "save_path": f"{script_dir}\\snapped_images",
-        "yolo_weights": f"{script_dir}\\weights\\leishmania_finetuning.pt",
+        "yolo_weights": f"{script_dir}\\weights\\universal_model.pt",
     }
+
 
     # Create the configuration YAML (in subfolder 'config')
     file_path = os.path.join(script_dir, "config", "config.yml")
